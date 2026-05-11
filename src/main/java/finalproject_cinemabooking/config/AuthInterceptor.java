@@ -55,20 +55,17 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         if (isStaffPage && role != User.Role.STAFF) {
-            session.invalidate();
-            response.sendRedirect("/login?error=access_denied");
+            response.sendRedirect("/home?error=access_denied");
             return false;
         }
 
         if (role == User.Role.STAFF && isUserPage) {
-            session.invalidate();
-            response.sendRedirect("/login?error=access_denied");
+            response.sendRedirect("/staff?error=access_denied");
             return false;
         }
 
         if (role == User.Role.CUSTOMER && (isAdminPage || isStaffPage)) {
-            session.invalidate();
-            response.sendRedirect("/login?error=access_denied");
+            response.sendRedirect("/home?error=access_denied");
             return false;
         }
 

@@ -32,4 +32,6 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
 
     @Query("SELECT COUNT(DISTINCT s.movie.id) FROM Showtime s WHERE s.status <> 'DELETED'")
     long countActiveMovies();
+
+    boolean existsByRoomId(Long roomId);
 }

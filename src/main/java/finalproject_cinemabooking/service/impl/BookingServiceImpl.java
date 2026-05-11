@@ -4,6 +4,7 @@ import finalproject_cinemabooking.model.dto.BookingHistoryDTO;
 import finalproject_cinemabooking.model.entity.*;
 import finalproject_cinemabooking.repository.*;
 import finalproject_cinemabooking.service.BookingService;
+import finalproject_cinemabooking.service.BookingEmailService;
 import jakarta.persistence.LockModeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Lock;
@@ -14,14 +15,20 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class BookingServiceImpl implements BookingService {
+    private static final Logger log = LoggerFactory.getLogger(BookingServiceImpl.class);
+
     @Autowired private BookingRepository bookingRepository;
     @Autowired private TicketRepository ticketRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private ShowtimeRepository showtimeRepository;
     @Autowired private SeatRepository seatRepository;
+    @Autowired private UserProfileRepository userProfileRepository;
+    @Autowired private BookingEmailService bookingEmailService;
 
     @Override
     @Transactional
@@ -66,6 +73,7 @@ public class BookingServiceImpl implements BookingService {
         
         Booking savedBooking = bookingRepository.save(booking);
 
+        List<Ticket> createdTickets = new ArrayList<>();
         for (Long seatId : seatIds) {
             Seat seat = seatRepository.findById(seatId).orElseThrow();
             Ticket ticket = new Ticket();
@@ -75,6 +83,14 @@ public class BookingServiceImpl implements BookingService {
             ticket.setPrice(pricePerSeat);
             ticket.setStatus(Ticket.TicketStatus.CONFIRMED); // Sửa lại cú pháp cho đúng
             ticketRepository.save(ticket);
+            createdTickets.add(ticket);
+        }
+
+        try {
+            UserProfile profile = userProfileRepository.findByUserId(userId).orElse(null);
+            bookingEmailService.sendBookingSuccessEmail(profile, savedBooking, createdTickets);
+        } catch (Exception ex) {
+            log.warn("Failed to send booking email for bookingCode={}", savedBooking.getBookingCode(), ex);
         }
         return savedBooking;
     }

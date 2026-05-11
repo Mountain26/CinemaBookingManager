@@ -208,6 +208,11 @@ public class ViewController {
         return "admin-genres";
     }
 
+    @GetMapping("/admin/rooms")
+    public String adminRoomsPage() {
+        return "admin-rooms";
+    }
+
     @PostMapping("/admin/staff/add")
     public String addStaff(@RequestParam String username,
                            @RequestParam String password,

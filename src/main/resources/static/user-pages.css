@@ -30,7 +30,7 @@
 .section-header { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; }
 .section h2{margin:0;font-size:34px; border-left: 4px solid var(--primary); padding-left: 12px;}
 .filter-form { display: flex; gap: 16px; align-items: center; background: var(--card); padding: 16px; border-radius: 12px; border: 1px solid var(--border); }
-.movies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:30px}
+.movies-grid{display:grid;grid-template-columns: repeat(4, 1fr);;gap:30px}
 .movie-card{cursor:pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); padding-bottom: 16px; height: 100%; display: flex; flex-direction: column;}
 .movie-card:hover { transform: translateY(-8px); box-shadow: 0 12px 24px rgba(0,0,0,0.4); border-color: rgba(212, 175, 55, 0.3); }
 .poster-wrap{position:relative;aspect-ratio:2/3;overflow:hidden;margin-bottom:16px; width: 100%;}

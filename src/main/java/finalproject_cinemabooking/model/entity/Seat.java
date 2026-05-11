@@ -28,6 +28,9 @@ public class Seat {
     @Column(nullable = false)
     private String seatName; // Tên ghế (Ví dụ: A1, A2, B1...)
 
+    @Column(nullable = false)
+    private Integer seatNumber; // Số thứ tự ghế trong phòng
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SeatStatus status; // Trạng thái ghế: TRỐNG, ĐÃ ĐẶT...

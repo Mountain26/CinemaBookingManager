@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý thể loại - CinemaX</title>
+    <title>Quản lý phòng chiếu - CinemaX</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/admin-management.css}">
@@ -18,8 +18,8 @@
             <a th:href="@{/admin}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-desktop w-5"></i>Tổng quan</a>
             <a th:href="@{/admin/movies}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-film w-5"></i>Phim</a>
             <a th:href="@{/admin/showtimes}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="far fa-calendar-alt w-5"></i>Lịch chiếu</a>
-            <a th:href="@{/admin/genres}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-yellow-500 text-black font-medium"><i class="fas fa-tags w-5"></i>Thể loại</a>
-            <a th:href="@{/admin/rooms}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white pl-10"><i class="fas fa-door-open w-5"></i>Phòng chiếu</a>
+            <a th:href="@{/admin/genres}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-tags w-5"></i>Thể loại</a>
+            <a th:href="@{/admin/rooms}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-yellow-500 text-black font-medium"><i class="fas fa-door-open w-5"></i>Phòng chiếu</a>
             <a th:href="@{/admin/staff}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-user-tie w-5"></i>Tài khoản nhân viên</a>
         </nav>
         <div class="p-4 border-t border-zinc-700">
@@ -30,17 +30,21 @@
     <!-- Main Content -->
     <main class="flex-1 overflow-auto p-8">
         <div class="flex items-center justify-between mb-8">
-            <h1 class="text-3xl font-semibold">Quản lý thể loại</h1>
+            <h1 class="text-3xl font-semibold">Quản lý phòng chiếu</h1>
         </div>
 
         <!-- Form -->
         <div class="bg-zinc-900 p-4 rounded-lg mb-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="col-span-2">
-                    <input id="genre-name-input" class="bg-zinc-800 text-white p-2 rounded w-full border border-zinc-700 focus:border-yellow-500 focus:outline-none" placeholder="Tên thể loại">
-                    <p id="genre-name-error" class="text-red-400 text-sm mt-1 h-5"></p>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="md:col-span-2">
+                    <input id="room-name-input" class="bg-zinc-800 text-white p-2 rounded w-full border border-zinc-700 focus:border-yellow-500 focus:outline-none" placeholder="Tên phòng chiếu">
+                    <p id="room-name-error" class="text-red-400 text-sm mt-1 h-5"></p>
                 </div>
-                <button id="save-btn" class="bg-yellow-500 text-black rounded p-2 h-10">Thêm thể loại</button>
+                <div class="md:col-span-2">
+                    <input id="room-capacity-input" type="number" min="1" class="bg-zinc-800 text-white p-2 rounded w-full border border-zinc-700 focus:border-yellow-500 focus:outline-none" placeholder="Sức chứa">
+                    <p id="room-capacity-error" class="text-red-400 text-sm mt-1 h-5"></p>
+                </div>
+                <button id="save-btn" class="bg-yellow-500 text-black rounded p-2 h-10 self-start">Thêm phòng</button>
             </div>
             <p id="form-message" class="mt-2 text-red-400"></p>
         </div>
@@ -51,12 +55,12 @@
                 <thead class="bg-zinc-800">
                     <tr>
                         <th class="text-left p-4">STT</th>
-                        <th class="text-left p-4">ID</th>
-                        <th class="text-left p-4">Tên</th>
+                        <th class="text-left p-4">Tên phòng</th>
+                        <th class="text-left p-4">Sức chứa</th>
                         <th class="text-left p-4">Hành động</th>
                     </tr>
                 </thead>
-                <tbody id="genre-rows"></tbody>
+                <tbody id="room-rows"></tbody>
             </table>
         </section>
     </main>
@@ -65,13 +69,15 @@
 
 <script>
     // State
-    let genres = [];
-    let editingGenreId = null;
+    let rooms = [];
+    let editingRoomId = null;
 
     // DOM Elements
-    const genreRows = document.getElementById('genre-rows');
-    const nameInput = document.getElementById('genre-name-input');
-    const nameError = document.getElementById('genre-name-error');
+    const roomRows = document.getElementById('room-rows');
+    const nameInput = document.getElementById('room-name-input');
+    const capacityInput = document.getElementById('room-capacity-input');
+    const nameError = document.getElementById('room-name-error');
+    const capacityError = document.getElementById('room-capacity-error');
     const formMessage = document.getElementById('form-message');
     const saveBtn = document.getElementById('save-btn');
     const adminPopupRoot = document.getElementById('admin-popup-root');
@@ -133,15 +139,16 @@
 
     // UI Functions
     function renderTable() {
-        genreRows.innerHTML = genres.map(genre => `
+        roomRows.innerHTML = rooms.map((room, index) => `
             <tr class="border-t border-zinc-700 hover:bg-zinc-800">
-                <td class="p-4">${genre.id}</td>
-                <td class="p-4">${genre.name}</td>
+                <td class="p-4">${index + 1}</td>
+                <td class="p-4">${room.name}</td>
+                <td class="p-4">${room.capacity}</td>
                 <td class="p-4">
-                    <button class="mr-3 text-gray-400 hover:text-green-500 btn-success" onclick="startEdit(${genre.id})">
+                    <button class="mr-3 text-gray-400 hover:text-green-500 btn-success" onclick="startEdit(${room.id})">
                         <i class="fas fa-pen"></i> Sửa
                     </button>
-                    <button class="text-gray-400 hover:text-red-500 btn-danger" onclick="confirmDeleteGenre(${genre.id})">
+                    <button class="text-gray-400 hover:text-red-500 btn-danger" onclick="confirmDeleteRoom(${room.id})">
                         <i class="fas fa-trash"></i> Xóa
                     </button>
                 </td>
@@ -150,88 +157,112 @@
     }
 
     function clearForm() {
-        editingGenreId = null;
+        editingRoomId = null;
         nameInput.value = '';
+        capacityInput.value = '';
         nameError.textContent = '';
+        capacityError.textContent = '';
         formMessage.textContent = '';
-        saveBtn.textContent = 'Thêm thể loại';
+        saveBtn.textContent = 'Thêm phòng';
         nameInput.classList.remove('border-red-500');
+        capacityInput.classList.remove('border-red-500');
     }
 
     // Logic
-    async function loadGenres() {
+    async function loadRooms() {
         try {
-            genres = await api.get('/api/admin/genres');
+            rooms = await api.get('/api/admin/rooms');
             renderTable();
         } catch (error) {
-            formMessage.textContent = `Lỗi tải danh sách thể loại: ${error.message}`;
+            formMessage.textContent = `Lỗi tải danh sách phòng chiếu: ${error.message}`;
         }
     }
 
     function startEdit(id) {
-        const genre = genres.find(g => g.id === id);
-        if (!genre) return;
+        const room = rooms.find(r => r.id === id);
+        if (!room) return;
 
-        editingGenreId = id;
-        nameInput.value = genre.name;
-        saveBtn.textContent = 'Cập nhật thể loại';
+        editingRoomId = id;
+        nameInput.value = room.name;
+        capacityInput.value = room.capacity;
+        saveBtn.textContent = 'Cập nhật phòng';
         nameError.textContent = '';
+        capacityError.textContent = '';
         formMessage.textContent = '';
         nameInput.focus();
     }
 
-    async function saveGenre() {
+    async function saveRoom() {
         const name = nameInput.value.trim();
+        const capacity = Number(capacityInput.value);
+        let hasError = false;
+
         if (!name) {
-            nameError.textContent = 'Tên thể loại không được để trống.';
+            nameError.textContent = 'Tên phòng không được để trống.';
             nameInput.classList.add('border-red-500');
-            return;
+            hasError = true;
         } else {
             nameError.textContent = '';
             nameInput.classList.remove('border-red-500');
         }
 
-        const url = editingGenreId ? `/api/admin/genres/${editingGenreId}` : '/api/admin/genres';
-        const method = editingGenreId ? api.put : api.post;
+        if (!capacityInput.value || Number.isNaN(capacity) || capacity <= 0) {
+            capacityError.textContent = 'Sức chứa phải lớn hơn 0.';
+            capacityInput.classList.add('border-red-500');
+            hasError = true;
+        } else {
+            capacityError.textContent = '';
+            capacityInput.classList.remove('border-red-500');
+        }
+
+        if (hasError) return;
+
+        const url = editingRoomId ? `/api/admin/rooms/${editingRoomId}` : '/api/admin/rooms';
+        const method = editingRoomId ? api.put : api.post;
 
         try {
-            await method(url, { name });
+            await method(url, { name, capacity });
             clearForm();
-            await loadGenres();
+            await loadRooms();
         } catch (error) {
             formMessage.textContent = error.message;
         }
     }
 
-    function confirmDeleteGenre(id) {
+    function confirmDeleteRoom(id) {
         openAdminConfirm({
-            title: 'Xóa thể loại?',
-            message: 'Hành động này không thể hoàn tác. Bạn có chắc chắn?',
+            title: 'Xóa phòng chiếu?',
+            message: 'Phòng chiếu sẽ bị xóa vĩnh viễn. Bạn có chắc chắn?',
             confirmLabel: 'Xóa',
             cancelLabel: 'Hủy',
-            onConfirm: () => deleteGenre(id)
+            onConfirm: () => deleteRoom(id)
         });
     }
 
-    async function deleteGenre(id) {
-
+    async function deleteRoom(id) {
         try {
-            await api.delete(`/api/admin/genres/${id}`);
-            await loadGenres();
+            await api.delete(`/api/admin/rooms/${id}`);
+            await loadRooms();
         } catch (error) {
             formMessage.textContent = error.message;
         }
     }
 
     // Event Listeners
-    saveBtn.addEventListener('click', saveGenre);
-    document.getElementById('genre-name-input').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') saveGenre();
+    saveBtn.addEventListener('click', saveRoom);
+    document.getElementById('room-name-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveRoom();
+        if (e.key === 'Escape') clearForm();
+    });
+    document.getElementById('room-capacity-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveRoom();
         if (e.key === 'Escape') clearForm();
     });
 
     // Initial Load
-    document.addEventListener('DOMContentLoaded', loadGenres);
+    document.addEventListener('DOMContentLoaded', loadRooms);
 </script>
 </body>
 </html>
+
+
