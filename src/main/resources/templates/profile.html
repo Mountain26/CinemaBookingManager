@@ -175,6 +175,7 @@
                     <div style="flex: 1;">
                         <h3 style="margin-bottom: 0.5rem;">${item.movieTitle}</h3>
                         <p style="font-size: 0.875rem; color: var(--muted-foreground); margin-bottom: 0.5rem;">Ghế: ${item.seatNames.join(', ')}</p>
+                        <p style="font-size: 0.875rem; color: var(--muted-foreground);">Mã vé: <strong>${item.bookingCode || '-'}</strong></p>
                         <span class="status-badge ${item.status === 'CONFIRMED' ? 'status-valid' : 'status-cancelled'}">${item.status === 'CONFIRMED' ? 'Đã xác nhận' : 'Đã hủy'}</span>
                     </div>
                     <div style="text-align: right;">
@@ -194,18 +195,22 @@
                 <div class="popup-overlay" onclick="closePopup()">
                     <div class="panel" style="max-width: 400px; width: 100%;" onclick="event.stopPropagation()">
                         <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; text-align: center;">Vé điện tử</h3>
-                        <div style="background-color: var(--background); border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem;">
-                            <div style="text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                        <div style="background-color: var(--background); border-radius: 0.5rem; padding: 1.1rem; margin-bottom: 1rem;">
+                            <div style="text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                                <p style="font-size: 0.875rem; color: var(--muted-foreground);">Mã vé</p>
+                                <p style="font-size: 1.25rem; letter-spacing: 1px;"><strong>${item.bookingCode || '-'}</strong></p>
+                            </div>
+                            <div style="text-align: center; border-bottom: 1px solid var(--border); padding: 0.75rem 0;">
                                 <p style="font-size: 0.875rem; color: var(--muted-foreground);">Phim</p>
                                 <p>${item.movieTitle}</p>
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border);">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
                                 <div><p style="font-size: 0.875rem; color: var(--muted-foreground);">Ngày</p><p>${new Date(item.showtimeStart).toLocaleDateString()}</p></div>
                                 <div><p style="font-size: 0.875rem; color: var(--muted-foreground);">Giờ</p><p>${new Date(item.showtimeStart).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p></div>
                                 <div><p style="font-size: 0.875rem; color: var(--muted-foreground);">Phòng</p><p>${item.roomName}</p></div>
                                 <div><p style="font-size: 0.875rem; color: var(--muted-foreground);">Ghế</p><p>${item.seatNames.join(', ')}</p></div>
                             </div>
-                            <div style="padding-top: 1rem; text-align: center;">
+                            <div style="padding-top: 0.75rem; text-align: center;">
                                 <p style="font-size: 0.875rem; color: var(--muted-foreground);">Tổng tiền</p>
                                 <p style="font-size: 1.25rem;">${formatCurrency(item.totalPrice)}</p>
                             </div>
@@ -308,3 +313,6 @@
     </script>
 </body>
 </html>
+
+
+
