@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cổng thông tin nhân viên CinemaX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#09090b',
+                        card: '#18181b',
+                        border: '#27272a',
+                        primary: '#d4af37',
+                        'primary-foreground': '#000000',
+                        secondary: '#27272a',
+                        muted: '#a1a1aa',
+                        'muted-foreground': '#a1a1aa',
+                        'input-background': '#18181b',
+                        destructive: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #060713;
+            color: #ffffff;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+    <div class="bg-card border-b border-border px-5 py-4 flex items-center justify-between">
+        <h1 class="text-2xl font-semibold">Cổng thông tin nhân viên CinemaX</h1>
+        <a th:href="@{/logout}"
+            class="flex items-center gap-2 px-4 py-2 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors">
+            <i class="fas fa-sign-out-alt w-5 h-5 flex items-center justify-center"></i>
+            Đăng xuất
+        </a>
+    </div>
+
+    <div id="access-alert" class="max-w-2xl w-full" style="display:none; margin: 16px auto 0; padding: 12px 16px; background-color: #3b0f0f; color: #fca5a5; border: 1px solid #7f1d1d; border-radius: 8px;">
+        Không được truy cập trang này.
+    </div>
+
+    <div class="flex-1 flex flex-col items-center justify-start px-8 pt-24 pb-8">
+        <div class="max-w-2xl w-full space-y-8">
+            <div class="text-center">
+                <h2 class="text-3xl font-semibold mb-2">Xác thực vé</h2>
+                <p class="text-muted-foreground">Quét hoặc nhập mã đặt vé để xác thực</p>
+            </div>
+
+            <div class="bg-card rounded-lg p-8 border border-[#3a3247]">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm mb-2 font-medium">Nhập mã đặt vé</label>
+                        <div class="flex gap-3">
+                            <input type="text"
+                                class="flex-1 px-4 py-4 rounded-lg bg-input-background border-2 border-border focus:border-primary focus:outline-none text-lg text-white"
+                                placeholder="Nhập mã đặt vé..." />
+                            <button
+                                class="px-8 py-4 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 flex items-center gap-2 transition-colors">
+                                <i class="fas fa-search w-5 h-5 flex items-center justify-center"></i>
+                                Tìm kiếm
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-border"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-4 bg-card text-muted-foreground">HOẶC</span>
+                        </div>
+                    </div>
+
+                    <button
+                        class="w-full py-8 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-primary/5 transition-colors flex flex-col items-center gap-3">
+                        <i class="fas fa-qrcode text-6xl text-muted-foreground mb-2"></i>
+                        <span class="text-lg font-medium">Quét mã QR</span>
+                        <span class="text-sm text-muted-foreground">Nhấn để mô phỏng quét QR</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pre-designed valid ticket UI as an example. Normally this would be dynamically generated or shown after scan/search -->
+            <div class="bg-card rounded-lg p-8 border-2 border-primary hidden" id="ticketResult">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-5xl text-green-500"></i>
+                    </div>
+                </div>
+                <h3 class="text-3xl text-green-500 text-center font-semibold mb-6">Vé hợp lệ</h3>
+
+                <div class="bg-background rounded-lg p-6 mb-6 space-y-3">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Mã đặt vé</p>
+                            <p class="text-lg font-medium">BKG-872A4</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Trạng thái</p>
+                            <p class="text-lg font-medium text-green-500">HỢP LỆ</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm text-muted-foreground">Phim</p>
+                        <p class="text-lg font-medium">Galactic Odyssey</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-sm text-muted-foreground">Ngày</p>
+                            <p class="font-medium">Apr 15</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Giờ</p>
+                            <p class="font-medium">19:30</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-muted-foreground">Phòng</p>
+                            <p class="font-medium">IMAX 1</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm text-muted-foreground">Ghế</p>
+                        <p class="font-medium">F12, F13</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button
+                        class="py-4 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 flex items-center justify-center gap-2 transition-colors">
+                        <i class="fas fa-check-circle w-5 h-5 flex items-center justify-center"></i>
+                        Đánh dấu đã sử dụng
+                    </button>
+                    <button
+                        class="py-4 bg-secondary font-semibold rounded-lg hover:bg-secondary/80 flex items-center justify-center gap-2 transition-colors">
+                        <i class="fas fa-print w-5 h-5 flex items-center justify-center"></i>
+                        In vé
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === 'access_denied') {
+        const alertEl = document.getElementById('access-alert');
+        if (alertEl) {
+            alertEl.style.display = 'block';
+        }
+        params.delete('error');
+        const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+        window.history.replaceState({}, '', newUrl);
+    }
+</script>
+</body>
+</body>
+
+</html>

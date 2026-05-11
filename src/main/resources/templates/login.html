@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Đăng nhập - CinemaX</title>
+  <link rel="stylesheet" th:href="@{/base.css}">
+  <link rel="stylesheet" th:href="@{/auth.css}">
+</head>
+<body class="bg-background text-foreground">
+  <div class="auth-layout">
+    <div class="auth-hero">
+      <div class="auth-hero-content">
+        <svg class="auth-film-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg>
+        <h1 class="auth-hero-title">Chào mừng đến CinemaX</h1>
+        <p class="auth-hero-subtitle">Trải nghiệm điện ảnh cao cấp đang chờ bạn</p>
+      </div>
+    </div>
+
+    <div class="auth-form-wrap">
+      <div class="auth-form-box">
+        <div class="auth-mobile-header">
+          <svg class="auth-mobile-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/></svg>
+          <h2 class="auth-mobile-title">CinemaX</h2>
+        </div>
+
+        <div class="auth-tabs">
+          <span class="auth-tab active">Đăng nhập</span>
+          <a class="auth-tab" th:href="@{/register}">Đăng ký</a>
+        </div>
+        <p class="auth-access-error" th:if="${authError}" th:text="${authError}"></p>
+        <p class="auth-access-error" th:if="${formError}" th:text="${formError}"></p>
+
+        <form th:action="@{/login}" method="post">
+          <div class="auth-field">
+            <label>Email</label>
+            <input type="text" name="email" placeholder="Nhập email" th:value="${email}" th:classappend="${fieldErrors != null and fieldErrors['email'] != null} ? ' auth-input-error' : ''">
+            <p class="auth-field-error" th:if="${fieldErrors != null and fieldErrors['email'] != null}" th:text="${fieldErrors['email']}"></p>
+          </div>
+          <div class="auth-field">
+            <label>Mật khẩu</label>
+            <input type="password" name="password" placeholder="Nhập mật khẩu" th:classappend="${fieldErrors != null and fieldErrors['password'] != null} ? ' auth-input-error' : ''">
+            <p class="auth-field-error" th:if="${fieldErrors != null and fieldErrors['password'] != null}" th:text="${fieldErrors['password']}"></p>
+          </div>
+
+          <button class="auth-main-btn" type="submit">Đăng nhập</button>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

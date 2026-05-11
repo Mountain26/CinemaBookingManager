@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài khoản của tôi - CinemaX</title>
+    <link rel="stylesheet" th:href="@{/base.css}">
+    <link rel="stylesheet" th:href="@{/user-pages.css}">
+    <style>
+        :root {
+            --background: #121212;
+            --foreground: #f5f5f7;
+            --card: #1a1a1a;
+            --primary: #f5c518;
+            --primary-foreground: #121212;
+            --secondary: #1a1a24;
+            --muted: #1f1f2e;
+            --muted-foreground: #8b8b93;
+            --border: #2c2c2c;
+            --destructive: #ef4444;
+            --destructive-foreground: #ffffff;
+            --input-background: #1a1a1a;
+            --success: #22c55e; /* Added success color */
+        }
+        body { background-color: var(--background); color: var(--foreground); font-family: sans-serif; margin: 0; }
+        .main-container { max-width: 768px; margin: 0 auto; padding: 2rem 1rem; }
+        .tabs { display: flex; gap: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+        .tab-button { display: flex; align-items: center; gap: 0.5rem; padding: 0 1rem 1rem; color: var(--muted-foreground); border-bottom: 2px solid transparent; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; font-size: 1rem;}
+        .tab-button.active { color: var(--primary); border-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .panel { background-color: var(--card); border-radius: 0.5rem; padding: 1.5rem; }
+        .history-item { display: flex; gap: 1rem; cursor: pointer; transition: background-color: 0.2s; }
+        .history-item:hover { background-color: rgba(255,255,255,0.03); }
+        .history-item img { width: 6rem; height: 9rem; object-fit: cover; border-radius: 0.25rem; }
+        .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; }
+        .status-valid { background-color: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .status-cancelled { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .profile-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .profile-icon-wrapper { width: 5rem; height: 5rem; background-color: var(--secondary); border-radius: 9999px; display: flex; align-items: center; justify-content: center; }
+        .profile-icon { width: 2.5rem; height: 2.5rem; color: var(--primary); }
+        .form-field { margin-bottom: 1rem; }
+        .form-field label { display: block; font-size: 0.875rem; margin-bottom: 0.5rem; color: var(--muted-foreground); }
+        .form-input { width: 100%; box-sizing: border-box; padding: 0.75rem 1rem; border-radius: 0.5rem; background-color: var(--input-background); border: 1px solid var(--border); color: var(--foreground); }
+        .form-input:focus { border-color: var(--primary); outline: none; }
+        .form-input.input-error { border-color: var(--destructive) !important; }
+        .field-error { color: var(--destructive); font-size: 0.875rem; margin-top: 0.25rem; }
+        .action-button { width: 100%; padding: 0.75rem; border-radius: 0.5rem; font-size: 1rem; font-weight: 500; cursor: pointer; border: none; }
+        .btn-primary { background-color: var(--primary); color: var(--primary-foreground); }
+        .btn-destructive { background-color: var(--destructive); color: var(--destructive-foreground); }
+        .btn-secondary { background-color: var(--secondary); color: var(--foreground); }
+        .popup-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 20; padding: 1rem; }
+        .alert-success { color: var(--success); margin-bottom: 1rem; } /* Added success message style */
+        .alert-error { color: var(--destructive); margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <header class="user-topbar">
+        <div class="user-topbar-inner">
+            <a class="btn-ghost" th:href="@{/home}" style="margin-right: 20px;">Quay lại</a>
+            <div class="brand">CinemaX</div>
+            <div class="topbar-actions">
+                <span class="btn-ghost" style="cursor: default;">Xin chào, <span th:text="${currentUserName}">bạn</span></span>
+                <a class="btn-outline" th:href="@{/profile}">Hồ sơ của tôi</a>
+                <a class="btn-ghost" th:href="@{/logout}">Đăng xuất</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="tabs">
+            <button id="profile-tab-btn" class="tab-button">Hồ sơ</button>
+            <button id="history-tab-btn" class="tab-button">Lịch sử vé</button>
+        </div>
+
+        <div id="profile-content" class="tab-content">
+            <div class="panel">
+                <div class="profile-header">
+                    <div class="profile-icon-wrapper">
+                        <svg class="profile-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <h3 style="font-size: 1.5rem;" th:text="${session.ROLE == 'ADMIN'} ? 'Quản trị' : (${profile != null ? profile.fullName : 'Người dùng'})">Mountain</h3>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+                <form id="profile-form" th:action="@{/profile}" method="post" novalidate>
+                    <div class="form-field">
+                        <label for="fullName">Họ tên</label>
+                        <input id="fullName" name="fullName" type="text" class="form-input" th:value="${profile != null ? profile.fullName : ''}" th:classappend="${fieldErrors != null && fieldErrors.containsKey('fullName')} ? 'input-error' : ''">
+                        <p th:if="${fieldErrors != null && fieldErrors.containsKey('fullName')}" class="field-error" th:text="${fieldErrors.fullName}"></p>
+                        <p id="fullName-error" class="field-error" style="display: none;"></p>
+                    </div>
+                    <div class="form-field">
+                        <label for="email">Email</label>
+                        <input id="email" name="email" type="email" class="form-input" th:value="${profile != null ? profile.email : ''}" th:classappend="${fieldErrors != null && fieldErrors.containsKey('email')} ? 'input-error' : ''">
+                        <p th:if="${fieldErrors != null && fieldErrors.containsKey('email')}" class="field-error" th:text="${fieldErrors.email}"></p>
+                        <p id="email-error" class="field-error" style="display: none;"></p>
+                    </div>
+                    <div class="form-field">
+                        <label for="phone">Số điện thoại</label>
+                        <input id="phone" name="phone" type="text" class="form-input" th:value="${profile != null ? profile.phone : ''}" th:classappend="${fieldErrors != null && fieldErrors.containsKey('phone')} ? 'input-error' : ''">
+                        <p th:if="${fieldErrors != null && fieldErrors.containsKey('phone')}" class="field-error" th:text="${fieldErrors.phone}"></p>
+                        <p id="phone-error" class="field-error" style="display: none;"></p>
+                    </div>
+                    <div class="form-field">
+                        <label for="oldPassword">Mật khẩu hiện tại</label>
+                        <input id="oldPassword" name="oldPassword" type="password" class="form-input" th:classappend="${fieldErrors != null && fieldErrors.containsKey('oldPassword')} ? 'input-error' : ''">
+                        <p th:if="${fieldErrors != null && fieldErrors.containsKey('oldPassword')}" class="field-error" th:text="${fieldErrors.oldPassword}"></p>
+                        <p id="oldPassword-error" class="field-error" style="display: none;"></p>
+                    </div>
+                    <div class="form-field">
+                        <label for="newPassword">Mật khẩu mới</label>
+                        <input id="newPassword" name="newPassword" type="password" class="form-input" th:classappend="${fieldErrors != null && fieldErrors.containsKey('newPassword')} ? 'input-error' : ''">
+                        <p th:if="${fieldErrors != null && fieldErrors.containsKey('newPassword')}" class="field-error" th:text="${fieldErrors.newPassword}"></p>
+                        <p id="newPassword-error" class="field-error" style="display: none;"></p>
+                    </div>
+                    <button type="submit" class="action-button btn-primary" style="margin-top: 1.5rem;">Lưu thay đổi</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="history-content" class="tab-content">
+            <div id="booking-list" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+        </div>
+    </div>
+
+    <div id="popup-container"></div>
+
+    <script th:inline="javascript">
+        const historyTabBtn = document.getElementById('history-tab-btn');
+        const profileTabBtn = document.getElementById('profile-tab-btn');
+        const historyContent = document.getElementById('history-content');
+        const profileContent = document.getElementById('profile-content');
+        const bookingListEl = document.getElementById('booking-list');
+        const popupContainer = document.getElementById('popup-container');
+        const activeTab = /*[[${activeTab}]]*/ 'profile';
+        const profileForm = document.getElementById('profile-form');
+        const fullNameInput = document.getElementById('fullName');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const oldPasswordInput = document.getElementById('oldPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+
+        function switchTab(tab) {
+            if (tab === 'profile') {
+                profileTabBtn.classList.add('active');
+                historyTabBtn.classList.remove('active');
+                profileContent.classList.add('active');
+                historyContent.classList.remove('active');
+            } else {
+                historyTabBtn.classList.add('active');
+                profileTabBtn.classList.remove('active');
+                historyContent.classList.add('active');
+                profileContent.classList.remove('active');
+            }
+        }
+
+        historyTabBtn.onclick = () => switchTab('history');
+        profileTabBtn.onclick = () => switchTab('profile');
+
+        function formatCurrency(value) { return Number(value || 0).toLocaleString('vi-VN') + ' VND'; }
+
+        async function loadBookingHistory() {
+            const response = await fetch("/api/booking/history");
+            const items = await response.json();
+            if (!items || items.length === 0) {
+                bookingListEl.innerHTML = '<p style="text-align: center; color: var(--muted-foreground); padding: 2rem 0;">Chưa có vé đặt.</p>';
+                return;
+            }
+            bookingListEl.innerHTML = items.map(item => `
+                <div class="panel history-item" onclick='showTicket(${JSON.stringify(item)})'>
+                    <img src="${item.moviePosterUrl || 'https://i.imgur.com/OFGstSg.jpeg'}" alt="${item.movieTitle}">
+                    <div style="flex: 1;">
+                        <h3 style="margin-bottom: 0.5rem;">${item.movieTitle}</h3>
+                        <p style="font-size: 0.875rem; color: var(--muted-foreground); margin-bottom: 0.5rem;">Ghế: ${item.seatNames.join(', ')}</p>
+                        <span class="status-badge ${item.status === 'CONFIRMED' ? 'status-valid' : 'status-cancelled'}">${item.status === 'CONFIRMED' ? 'Đã xác nhận' : 'Đã hủy'}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-size: 1.25rem; color: var(--primary);">${formatCurrency(item.totalPrice)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function closePopup() {
+            popupContainer.innerHTML = '';
+        }
+
+        window.showTicket = (item) => {
+            const isCancellable = item.status === 'CONFIRMED' && new Date(item.showtimeStart) > new Date(Date.now() + 60 * 60 * 1000);
+            popupContainer.innerHTML = `
+                <div class="popup-overlay" onclick="closePopup()">
+                    <div class="panel" style="max-width: 400px; width: 100%;" onclick="event.stopPropagation()">
+                        <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; text-align: center;">Vé điện tử</h3>
+                        <div style="background-color: var(--background); border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem;">
+                            <div style="text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                                <p style="font-size: 0.875rem; color: var(--muted-foreground);">Phim</p>
+                                <p>${item.movieTitle}</p>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border);">
+                                <div><p style="font-size: 0.875rem; color: var(--muted-foreground);">Ngày</p><p>${new Date(item.showtimeStart).toLocaleDateString()}</p></div>
+                                <div><p style="font-size: 0.875rem; color: var(--muted-foreground);">Giờ</p><p>${new Date(item.showtimeStart).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p></div>
+                                <div><p style="font-size: 0.875rem; color: var(--muted-foreground);">Phòng</p><p>${item.roomName}</p></div>
+                                <div><p style="font-size: 0.875rem; color: var(--muted-foreground);">Ghế</p><p>${item.seatNames.join(', ')}</p></div>
+                            </div>
+                            <div style="padding-top: 1rem; text-align: center;">
+                                <p style="font-size: 0.875rem; color: var(--muted-foreground);">Tổng tiền</p>
+                                <p style="font-size: 1.25rem;">${formatCurrency(item.totalPrice)}</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            ${isCancellable ? `<button class="action-button btn-destructive" onclick="showCancelConfirm(${item.id})">Hủy vé</button>` : ''}
+                            <button class="action-button btn-secondary" onclick="closePopup()">Đóng</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.showCancelConfirm = (bookingId) => {
+            popupContainer.innerHTML = `
+                <div class="popup-overlay" onclick="closePopup()">
+                    <div class="panel" style="max-width: 400px; width: 100%;" onclick="event.stopPropagation()">
+                        <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">Hủy vé?</h3>
+                        <p style="color: var(--muted-foreground); margin-bottom: 1.5rem;">Hành động này sẽ giải phóng ghế của bạn. Bạn chắc chắn chứ?</p>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button class="action-button btn-secondary" onclick="closePopup()">Giữ vé</button>
+                            <button class="action-button btn-destructive" onclick="handleCancel(${bookingId})">Xác nhận hủy</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.handleCancel = async (bookingId) => {
+            try {
+                const response = await fetch('/api/booking/cancel/' + bookingId, { method: 'POST' });
+                if (response.ok) {
+                    closePopup();
+                    loadBookingHistory(); // Refresh the list
+                } else {
+                    const errorText = await response.text();
+                    alert('Hủy vé thất bại: ' + errorText);
+                }
+            } catch (e) {
+                alert('Đã xảy ra lỗi.');
+            }
+        }
+
+        function validateField(input, errorEl, message) {
+            if (!input.value.trim()) {
+                input.classList.add('input-error');
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+                return false;
+            }
+            input.classList.remove('input-error');
+            errorEl.style.display = 'none';
+            return true;
+        }
+
+        function setFieldError(input, errorEl, message) {
+            if (message) {
+                input.classList.add('input-error');
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+                return false;
+            }
+            input.classList.remove('input-error');
+            errorEl.style.display = 'none';
+            return true;
+        }
+
+        if (profileForm) {
+            profileForm.addEventListener('submit', function(event) {
+                const isFullNameValid = validateField(fullNameInput, document.getElementById('fullName-error'), 'Vui lòng nhập họ tên.');
+                const isEmailValid = validateField(emailInput, document.getElementById('email-error'), 'Vui lòng nhập email.');
+                const isPhoneValid = validateField(phoneInput, document.getElementById('phone-error'), 'Vui lòng nhập số điện thoại.');
+                const oldPasswordEl = document.getElementById('oldPassword-error');
+                const newPasswordEl = document.getElementById('newPassword-error');
+                let isPasswordValid = true;
+                if (newPasswordInput.value.trim()) {
+                    if (newPasswordInput.value.trim().length < 6) {
+                        isPasswordValid = setFieldError(newPasswordInput, newPasswordEl, 'Mật khẩu mới phải có ít nhất 6 ký tự.');
+                    } else {
+                        setFieldError(newPasswordInput, newPasswordEl, '');
+                    }
+                    if (!oldPasswordInput.value.trim()) {
+                        isPasswordValid = setFieldError(oldPasswordInput, oldPasswordEl, 'Vui lòng nhập mật khẩu hiện tại.') && isPasswordValid;
+                    } else {
+                        setFieldError(oldPasswordInput, oldPasswordEl, '');
+                    }
+                } else {
+                    setFieldError(oldPasswordInput, oldPasswordEl, '');
+                    setFieldError(newPasswordInput, newPasswordEl, '');
+                }
+
+                if (!isFullNameValid || !isEmailValid || !isPhoneValid || !isPasswordValid) {
+                    event.preventDefault();
+                }
+            });
+        }
+
+        switchTab(activeTab);
+        loadBookingHistory();
+    </script>
+</body>
+</html>

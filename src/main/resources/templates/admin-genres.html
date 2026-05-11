@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý thể loại - CinemaX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/admin-management.css}">
+</head>
+<body class="min-h-screen flex bg-black text-white">
+    <!-- Sidebar -->
+    <div class="w-64 bg-zinc-900 border-r border-zinc-700 flex flex-col">
+        <div class="p-6 border-b border-zinc-700">
+            <h2 class="text-xl font-semibold">Quản trị CinemaX</h2>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <a th:href="@{/admin}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-desktop w-5"></i>Tổng quan</a>
+            <a th:href="@{/admin/movies}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-film w-5"></i>Phim</a>
+            <a th:href="@{/admin/showtimes}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="far fa-calendar-alt w-5"></i>Lịch chiếu</a>
+            <a th:href="@{/admin/genres}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-yellow-500 text-black font-medium"><i class="fas fa-tags w-5"></i>Thể loại</a>
+            <a th:href="@{/admin/staff}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-user-tie w-5"></i>Tài khoản nhân viên</a>
+        </nav>
+        <div class="p-4 border-t border-zinc-700">
+            <a th:href="@{/logout}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-sign-out-alt w-5"></i>Đăng xuất</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-auto p-8">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl font-semibold">Quản lý thể loại</h1>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-zinc-900 p-4 rounded-lg mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="col-span-2">
+                    <input id="genre-name-input" class="bg-zinc-800 text-white p-2 rounded w-full border border-zinc-700 focus:border-yellow-500 focus:outline-none" placeholder="Tên thể loại">
+                    <p id="genre-name-error" class="text-red-400 text-sm mt-1 h-5"></p>
+                </div>
+                <button id="save-btn" class="bg-yellow-500 text-black rounded p-2 h-10">Thêm thể loại</button>
+            </div>
+            <p id="form-message" class="mt-2 text-red-400"></p>
+        </div>
+
+        <!-- Table -->
+        <section class="bg-zinc-900 rounded-lg border border-zinc-700 overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-zinc-800">
+                    <tr>
+                        <th class="text-left p-4">ID</th>
+                        <th class="text-left p-4">Tên</th>
+                        <th class="text-left p-4">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="genre-rows"></tbody>
+            </table>
+        </section>
+    </main>
+
+    <div id="admin-popup-root"></div>
+
+<script>
+    // State
+    let genres = [];
+    let editingGenreId = null;
+
+    // DOM Elements
+    const genreRows = document.getElementById('genre-rows');
+    const nameInput = document.getElementById('genre-name-input');
+    const nameError = document.getElementById('genre-name-error');
+    const formMessage = document.getElementById('form-message');
+    const saveBtn = document.getElementById('save-btn');
+    const adminPopupRoot = document.getElementById('admin-popup-root');
+
+    function closeAdminPopup() {
+        adminPopupRoot.innerHTML = '';
+    }
+
+    function openAdminConfirm({ title, message, confirmLabel, cancelLabel, onConfirm }) {
+        adminPopupRoot.innerHTML = `
+            <div class="admin-popup-overlay" onclick="closeAdminPopup()">
+                <div class="admin-popup-card" onclick="event.stopPropagation()">
+                    <h3 class="admin-popup-title">${title}</h3>
+                    <p class="admin-popup-message">${message}</p>
+                    <div class="admin-popup-actions">
+                        <button class="admin-popup-btn admin-popup-btn-secondary" onclick="closeAdminPopup()">${cancelLabel}</button>
+                        <button class="admin-popup-btn admin-popup-btn-danger" onclick="handleAdminConfirm()">${confirmLabel}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        window.handleAdminConfirm = () => {
+            closeAdminPopup();
+            onConfirm();
+        };
+    }
+
+    // API Functions
+    const api = {
+        async get(url) {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(await response.text());
+            return response.json();
+        },
+        async post(url, data) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) throw new Error(await response.text());
+            return response.json();
+        },
+        async put(url, data) {
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) throw new Error(await response.text());
+            return response.json();
+        },
+        async delete(url) {
+            const response = await fetch(url, { method: 'DELETE' });
+            if (!response.ok) throw new Error(await response.text());
+            return response.text();
+        }
+    };
+
+    // UI Functions
+    function renderTable() {
+        genreRows.innerHTML = genres.map(genre => `
+            <tr class="border-t border-zinc-700 hover:bg-zinc-800">
+                <td class="p-4">${genre.id}</td>
+                <td class="p-4">${genre.name}</td>
+                <td class="p-4">
+                    <button class="mr-3 text-gray-400 hover:text-green-500 btn-success" onclick="startEdit(${genre.id})">
+                        <i class="fas fa-pen"></i> Sửa
+                    </button>
+                    <button class="text-gray-400 hover:text-red-500 btn-danger" onclick="confirmDeleteGenre(${genre.id})">
+                        <i class="fas fa-trash"></i> Xóa
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function clearForm() {
+        editingGenreId = null;
+        nameInput.value = '';
+        nameError.textContent = '';
+        formMessage.textContent = '';
+        saveBtn.textContent = 'Thêm thể loại';
+        nameInput.classList.remove('border-red-500');
+    }
+
+    // Logic
+    async function loadGenres() {
+        try {
+            genres = await api.get('/api/admin/genres');
+            renderTable();
+        } catch (error) {
+            formMessage.textContent = `Lỗi tải danh sách thể loại: ${error.message}`;
+        }
+    }
+
+    function startEdit(id) {
+        const genre = genres.find(g => g.id === id);
+        if (!genre) return;
+
+        editingGenreId = id;
+        nameInput.value = genre.name;
+        saveBtn.textContent = 'Cập nhật thể loại';
+        nameError.textContent = '';
+        formMessage.textContent = '';
+        nameInput.focus();
+    }
+
+    async function saveGenre() {
+        const name = nameInput.value.trim();
+        if (!name) {
+            nameError.textContent = 'Tên thể loại không được để trống.';
+            nameInput.classList.add('border-red-500');
+            return;
+        } else {
+            nameError.textContent = '';
+            nameInput.classList.remove('border-red-500');
+        }
+
+        const url = editingGenreId ? `/api/admin/genres/${editingGenreId}` : '/api/admin/genres';
+        const method = editingGenreId ? api.put : api.post;
+
+        try {
+            await method(url, { name });
+            clearForm();
+            await loadGenres();
+        } catch (error) {
+            formMessage.textContent = error.message;
+        }
+    }
+
+    function confirmDeleteGenre(id) {
+        openAdminConfirm({
+            title: 'Xóa thể loại?',
+            message: 'Hành động này không thể hoàn tác. Bạn có chắc chắn?',
+            confirmLabel: 'Xóa',
+            cancelLabel: 'Hủy',
+            onConfirm: () => deleteGenre(id)
+        });
+    }
+
+    async function deleteGenre(id) {
+
+        try {
+            await api.delete(`/api/admin/genres/${id}`);
+            await loadGenres();
+        } catch (error) {
+            formMessage.textContent = error.message;
+        }
+    }
+
+    // Event Listeners
+    saveBtn.addEventListener('click', saveGenre);
+    document.getElementById('genre-name-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveGenre();
+        if (e.key === 'Escape') clearForm();
+    });
+
+    // Initial Load
+    document.addEventListener('DOMContentLoaded', loadGenres);
+</script>
+</body>
+</html>

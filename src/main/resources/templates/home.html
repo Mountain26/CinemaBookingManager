@@ -1,0 +1,156 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CinemaX - Trang chủ</title>
+  <link rel="stylesheet" th:href="@{/base.css}">
+  <link rel="stylesheet" th:href="@{/user-pages.css}">
+  <style>
+    .hero-slide {
+        transition: opacity 1s ease-in-out;
+        position: absolute;
+        inset: 0;
+    }
+    .hero-dots {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+    }
+    .dot-nav {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .dot-nav.active {
+        background-color: white;
+    }
+  </style>
+</head>
+<body>
+<header class="user-topbar">
+    <div class="user-topbar-inner">
+        <div class="brand">CinemaX</div>
+        <div class="topbar-actions">
+            <span class="btn-ghost" style="cursor: default;">Xin chào, <span th:text="${currentUserName}">bạn</span></span>
+            <a class="btn-outline" th:href="@{/profile}">Hồ sơ của tôi</a>
+            <a class="btn-ghost" th:href="@{/logout}">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+
+<div id="access-alert" style="display:none; max-width: 1280px; margin: 12px auto 0; padding: 12px 16px; background-color: #3b0f0f; color: #fca5a5; border: 1px solid #7f1d1d; border-radius: 8px;">
+    Không được truy cập trang này.
+</div>
+
+<div th:if="${!movies.isEmpty()}" class="hero">
+    <!-- Loop through the first 5 movies to create slides -->
+    <div th:each="movie, iterStat : ${movies.subList(0, T(java.lang.Math).min(movies.size(), 5))}"
+         class="hero-slide" th:style="${iterStat.index == 0} ? 'opacity: 1;' : 'opacity: 0;'">
+        <div class="hero-bg" th:style="'background-image: url(' + ${movie.posterUrl} + ');'"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content container">
+            <h1 th:text="${movie.title}">Tên phim</h1>
+            <p th:text="${movie.description}">Mô tả phim sẽ hiển thị ở đây.</p>
+            <div class="meta">
+                <div class="chip" th:text="${movie.genre}">Thể loại</div>
+                <div class="chip" th:text="${movie.duration} + ' phút'">Thời lượng</div>
+            </div>
+            <div class="hero-actions">
+                <a class="btn-primary" th:href="@{/showtimes(movieId=${movie.id})}">Đặt vé</a>
+            </div>
+        </div>
+    </div>
+    <div class="hero-dots">
+        <!-- Navigation dots -->
+        <div th:each="i : ${#numbers.sequence(0, T(java.lang.Math).min(movies.size(), 5) - 1)}"
+             class="dot-nav" th:classappend="${i == 0} ? 'active'" th:attr="data-slide=${i}"></div>
+    </div>
+</div>
+
+<main class="container">
+    <section class="section">
+        <h2>Phim đang chiếu</h2>
+        <div class="movies-grid">
+            <article class="movie-card" th:each="m : ${movies}" th:onclick="|location.href='@{/showtimes(movieId=${m.id})}'|">
+                <div class="poster-wrap">
+                    <img th:src="${m.posterUrl != null && !#strings.isEmpty(m.posterUrl) ? m.posterUrl : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&h=600&fit=crop'}" th:alt="${m.title}">
+                    <div class="hover-cta">
+                        <button class="btn-primary" type="button" style="width:100%">Đặt vé</button>
+                    </div>
+                </div>
+                <h3 class="movie-title" th:text="${m.title}"></h3>
+                <p class="movie-genre" th:text="${m.genre}"></p>
+                <div class="movie-meta">
+                    <span th:text="${m.duration} + ' phút'"></span>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('error') === 'access_denied') {
+            const alertEl = document.getElementById('access-alert');
+            if (alertEl) {
+                alertEl.style.display = 'block';
+            }
+            params.delete('error');
+            const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+            window.history.replaceState({}, '', newUrl);
+        }
+
+        const slides = document.querySelectorAll('.hero-slide');
+        const dots = document.querySelectorAll('.dot-nav');
+        let currentSlide = 0;
+        let slideInterval;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.style.opacity = i === index ? '1' : '0';
+            });
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            currentSlide = index;
+        }
+
+        function nextSlide() {
+            const newIndex = (currentSlide + 1) % slides.length;
+            showSlide(newIndex);
+        }
+
+        function startCarousel() {
+            stopCarousel(); // Ensure no multiple intervals are running
+            slideInterval = setInterval(nextSlide, 5000);
+        }
+
+        function stopCarousel() {
+            clearInterval(slideInterval);
+        }
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const slideIndex = parseInt(dot.getAttribute('data-slide'));
+                showSlide(slideIndex);
+                // Reset interval on manual navigation
+                startCarousel();
+            });
+        });
+
+        if (slides.length > 1) {
+            startCarousel();
+        }
+    });
+</script>
+
+</body>
+</html>

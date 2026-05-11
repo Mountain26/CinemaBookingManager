@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lịch chiếu - CinemaX</title><link rel="stylesheet" th:href="@{/base.css}"><link rel="stylesheet" th:href="@{/user-pages.css}">
+</head>
+<body>
+<header class="user-topbar">
+    <div class="user-topbar-inner">
+        <div class="brand">CinemaX</div>
+        <div class="topbar-actions">
+            <span class="btn-ghost" style="cursor: default;">Xin chào, <span th:text="${currentUserName}">bạn</span></span>
+            <a class="btn-outline" th:href="@{/profile}">Hồ sơ của tôi</a>
+            <a class="btn-ghost" th:href="@{/logout}">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+<section class="detail-hero" th:style="|background-image:url('${movie.posterUrl != null && !#strings.isEmpty(movie.posterUrl) ? movie.posterUrl : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1920&q=80'}')|"><div class="hero-overlay"></div><a class="back-btn" th:href="@{/home}">Quay lại</a></section>
+<main class="container detail-wrap"><div class="detail-card"><div class="detail-grid"><div><img class="detail-poster" th:src="${movie.posterUrl}" th:alt="${movie.title}"></div><div><h1 style="margin:0 0 12px;font-size:38px" th:text="${movie.title}"></h1><div class="meta"><span class="chip" th:text="${movie.genre}"></span><span class="chip" th:text="${movie.duration} + ' phút'"></span></div><p style="color:var(--muted);margin:0 0 14px" th:text="${movie.description}"></p></div></div></div>
+<section style="padding-bottom:34px"><div class="room-card" th:each="entry : ${showtimesByRoom}"><h3 style="margin-top:0" th:text="${entry.key.name}"></h3><div class="time-grid"><th:block th:each="s : ${entry.value}"><a class="time-btn" th:if="${s.status.name() == 'SCHEDULED'}" th:href="@{/seats(showtimeId=${s.id})}" th:text="${#temporals.format(s.startTime,'HH:mm dd/MM')}"></a><span class="time-btn disabled" th:if="${s.status.name() != 'SCHEDULED'}">Hết vé</span></th:block></div></div></section>
+</main>
+</body></html>

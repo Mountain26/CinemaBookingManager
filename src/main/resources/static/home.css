@@ -1,0 +1,48 @@
+.home-topbar { position: sticky; top: 0; z-index: 10; background: linear-gradient(90deg, #171b30, #111325); border-bottom: 1px solid #252a42; }
+.home-topbar-inner { max-width: 1240px; margin: 0 auto; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+.home-topbar-actions { display: flex; align-items: center; gap: 10px; }
+.home-profile { border: 1px solid var(--primary); color: var(--primary); background: transparent; padding: 10px 16px; border-radius: 10px; text-decoration: none; }
+.home-logout { border: 1px solid var(--border); background: transparent; padding: 10px 16px; border-radius: 10px; }
+
+/* Custom styles for home.html components mapped from HomePage.tsx */
+.hero-slider { height: 70vh; }
+.absolute-inset { position: absolute; inset: 0; }
+.transition-opacity { transition: opacity 1s; }
+.opacity-100 { opacity: 1; }
+.opacity-0 { opacity: 0; }
+.bg-cover { background-size: cover; }
+.bg-center { background-position: center; }
+.bg-gradient { background: linear-gradient(to top, var(--background), rgba(10,10,15,0.6), transparent); }
+.hero-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 2rem 4rem; z-index: 2; }
+.max-w-2xl { max-width: 42rem; }
+.hero-title { font-size: 3rem; margin-bottom: 1rem; line-height: 1; }
+.hero-desc { font-size: 1.125rem; margin-bottom: 1.5rem; color: rgba(255, 255, 255, 0.8); }
+.flex-wrap-gap { display: flex; flex-wrap: wrap; gap: 1rem; }
+.badge { padding: 0.25rem 0.75rem; background: var(--secondary); border-radius: 0.25rem; font-size: 0.875rem; }
+.icon-text { display: flex; align-items: center; gap: 0.25rem; }
+.flex-gap { display: flex; gap: 1rem; }
+.btn-primary { padding: 0.75rem 2rem; background: var(--primary); color: #000; border-radius: 0.5rem; text-decoration: none; display: inline-block; cursor: pointer; }
+.btn-secondary { padding: 0.75rem 2rem; background: var(--secondary); color: var(--foreground); border-radius: 0.5rem; border: none; cursor: pointer; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-2 { gap: 0.5rem; }
+
+.section-title { font-size: 1.875rem; margin-bottom: 1.5rem; }
+.movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
+.movie-card { cursor: pointer; position: relative; }
+.card-image-wrapper { position: relative; aspect-ratio: 2/3; border-radius: 0.5rem; overflow: hidden; margin-bottom: 0.75rem; }
+.card-img { width: 100%; height: 100%; object-fit: cover; }
+.card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); opacity: 0; transition: opacity 0.3s; }
+.movie-card:hover .card-overlay { opacity: 1; }
+.card-overlay-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 1rem; }
+.w-full { width: 100%; }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+.card-title { margin-bottom: 0.25rem; font-size: 1.125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-genre { font-size: 0.875rem; color: #888; margin-bottom: 0.25rem; }
+.card-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
+
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+.hidden { display: none; }
+.modal-content { background: var(--card); border-radius: 0.5rem; padding: 1.5rem; max-width: 42rem; width: 100%; }
+.modal-title { font-size: 1.5rem; margin-bottom: 1rem; }
+.video-container { aspect-ratio: 16/9; background: var(--secondary); border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; }
+.btn-block { width: 100%; padding: 0.5rem; background: var(--secondary); color: var(--foreground); border: none; border-radius: 0.25rem; cursor: pointer; }

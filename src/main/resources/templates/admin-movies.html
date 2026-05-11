@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Quản lý phim - CinemaX</title><script src="https://cdn.tailwindcss.com"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"><link rel="stylesheet" th:href="@{/admin-management.css}"></head>
+<body class="h-screen overflow-hidden flex bg-black text-white">
+<div class="w-64 h-screen bg-zinc-900 border-r border-zinc-700 flex flex-col"><div class="p-6 border-b border-zinc-700"><h2 class="text-xl font-semibold">Quản trị CinemaX</h2></div><nav class="flex-1 p-4 space-y-2 overflow-y-auto"><a th:href="@{/admin}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-desktop w-5"></i>Tổng quan</a><a th:href="@{/admin/movies}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-yellow-500 text-black font-medium"><i class="fas fa-film w-5"></i>Phim</a><a th:href="@{/admin/showtimes}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="far fa-calendar-alt w-5"></i>Lịch chiếu</a><a th:href="@{/admin/genres}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-tags w-5"></i>Thể loại</a><a th:href="@{/admin/staff}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-user-tie w-5"></i>Tài khoản nhân viên</a></nav><div class="p-4 border-t border-zinc-700"><a th:href="@{/logout}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-800 text-gray-300 hover:text-white"><i class="fas fa-sign-out-alt w-5"></i>Đăng xuất</a></div></div>
+ <main class="flex-1 overflow-auto p-8">
+   <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-semibold">Quản lý phim</h1>
+   </div>
+  <div class="bg-zinc-900 p-4 rounded-lg mb-4 movie-form">
+   <div class="movie-form-row">
+    <div class="movie-field">
+  <label class="movie-label" for="title">Tiêu đề</label>
+  <input id="title" class="movie-input border border-transparent" placeholder="Tiêu đề">
+	<p id="titleError" class="error-inline"></p>
+    </div>
+    <div class="movie-field">
+  <label class="movie-label" for="genre">Thể loại</label>
+  <select id="genre" class="movie-input border border-transparent"><option value="">Chọn thể loại</option></select>
+	<p id="genreError" class="error-inline"></p>
+    </div>
+    <div class="movie-field">
+  <label class="movie-label" for="duration">Thời lượng</label>
+  <input id="duration" type="number" class="movie-input border border-transparent" placeholder="Thời lượng">
+	<p id="durationError" class="error-inline"></p>
+    </div>
+    <div class="movie-field">
+  <label class="movie-label" for="posterFile">Áp phích</label>
+	<div class="movie-file">
+	 <input id="posterFile" type="file" accept="image/*" class="movie-file-input">
+	 <span id="posterFileName" class="movie-file-name">Chưa chọn tệp</span>
+	</div>
+    </div>
+    <div class="movie-field movie-actions">
+  <button onclick="saveMovie()" class="admin-btn-primary">Lưu phim</button>
+    </div>
+   </div>
+  </div>
+  <div class="movie-field">
+   <label class="movie-label" for="description"></label>
+   <textarea id="description" class="movie-input movie-textarea" placeholder="Mô tả"></textarea>
+  </div>
+  <p id="msg" class="mb-3 text-red-300"></p>
+  <section class="bg-zinc-900 rounded-lg border border-zinc-700 overflow-hidden"><table class="w-full"><thead class="bg-zinc-800"><tr><th class="text-left p-4">ID</th><th class="text-left p-4">Áp phích</th><th class="text-left p-4">Tiêu đề</th><th class="text-left p-4">Thể loại</th><th class="text-left p-4">Thời lượng</th><th class="text-left p-4">Hành động</th></tr></thead><tbody id="rows"></tbody></table></section>
+ </main>
+<div id="admin-popup-root"></div>
+
+ <script>let editingId=null,_movies=[];const adminPopupRoot=document.getElementById('admin-popup-root');const posterFileInput=document.getElementById('posterFile');const posterFileName=document.getElementById('posterFileName');posterFileInput.addEventListener('change',()=>{const file=posterFileInput.files[0];posterFileName.textContent=file?file.name:'Chưa chọn tệp';});function closeAdminPopup(){adminPopupRoot.innerHTML='';}function openAdminConfirm({title,message,confirmLabel,cancelLabel,onConfirm}){adminPopupRoot.innerHTML=`<div class="admin-popup-overlay" onclick="closeAdminPopup()"><div class="admin-popup-card" onclick="event.stopPropagation()"><h3 class="admin-popup-title">${title}</h3><p class="admin-popup-message">${message}</p><div class="admin-popup-actions"><button class="admin-popup-btn admin-popup-btn-secondary" onclick="closeAdminPopup()">${cancelLabel}</button><button class="admin-popup-btn admin-popup-btn-danger" onclick="handleAdminConfirm()">${confirmLabel}</button></div></div></div>`;window.handleAdminConfirm=()=>{closeAdminPopup();onConfirm();};}function confirmDeleteMovie(id){openAdminConfirm({title:'Xóa phim?',message:'Hành động này không thể hoàn tác. Bạn có muốn tiếp tục?',confirmLabel:'Xóa',cancelLabel:'Hủy',onConfirm:()=>deleteMovie(id)});}function setFieldError(id,msgText){const el=document.getElementById(id);const err=document.getElementById(id+'Error');if(msgText){el.classList.remove('border-transparent');el.classList.add('border-red-500');err.textContent=msgText;}else{el.classList.remove('border-red-500');el.classList.add('border-transparent');err.textContent='';}}function validateMovieForm(){let ok=true;const titleVal=title.value.trim();const genreVal=genre.value.trim();const durationVal=duration.value.trim();if(!titleVal){setFieldError('title','Tiêu đề không được bỏ trống.');ok=false;}else setFieldError('title','');if(!genreVal){setFieldError('genre','Thể loại không được bỏ trống.');ok=false;}else setFieldError('genre','');if(!durationVal||Number(durationVal)<=0){setFieldError('duration','Thời lượng phải lớn hơn 0.');ok=false;}else setFieldError('duration','');return ok;}async function loadGenres(){const r=await fetch('/api/admin/genres');if(!r.ok)return;const genres=await r.json();genre.innerHTML='<option value="">Chọn thể loại</option>';genres.forEach(g=>genre.innerHTML+=`<option value="${g.name}">${g.name}</option>`)}async function loadMovies(){const r=await fetch('/api/admin/movies');const d=await r.json();_movies=d;rows.innerHTML='';d.forEach(m=>rows.innerHTML+=`<tr class="border-t border-zinc-700"><td class="p-4">${m.id}</td><td class="p-4"><img class="movie-poster" src="${m.posterUrl||''}"></td><td class="p-4">${m.title}</td><td class="p-4">${m.genre||''}</td><td class="p-4">${m.duration} phút</td><td class="p-4"><button class="mr-2" onclick="editMovie(${m.id})"><i class="fas fa-pen"></i></button><button onclick="confirmDeleteMovie(${m.id})"><i class="fas fa-trash text-red-400"></i></button></td></tr>`)}function editMovie(id){const m=_movies.find(x=>x.id===id);if(!m)return;editingId=id;title.value=m.title||'';genre.value=m.genre||'';duration.value=m.duration||'';posterFileInput.value='';posterFileName.textContent='Chưa chọn tệp';description.value=m.description||'';setFieldError('title','');setFieldError('genre','');setFieldError('duration','');}async function saveMovie(){msg.textContent='';if(!validateMovieForm())return;const formData=new FormData();formData.append('title',title.value.trim());formData.append('genre',genre.value.trim());formData.append('duration',Number(duration.value));formData.append('description',description.value||'');const file=posterFileInput.files[0];if(file)formData.append('posterFile',file);const url=editingId?`/api/admin/movies/${editingId}`:'/api/admin/movies';const method=editingId?'PUT':'POST';const r=await fetch(url,{method,body:formData});if(!r.ok){msg.textContent=await r.text();return;}editingId=null;title.value='';genre.value='';duration.value='';posterFileInput.value='';posterFileName.textContent='Chưa chọn tệp';description.value='';setFieldError('title','');setFieldError('genre','');setFieldError('duration','');await loadGenres();loadMovies()}async function deleteMovie(id){const r=await fetch(`/api/admin/movies/${id}`,{method:'DELETE'});if(!r.ok){msg.textContent=await r.text();return;}await loadGenres();loadMovies()}loadGenres();loadMovies();</script>
+</body></html>

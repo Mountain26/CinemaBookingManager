@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý nhân viên - CinemaX</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/admin-management.css}">
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { background:'#09090b', card:'#18181b', border:'#27272a', primary:'#d4af37', 'primary-foreground':'#000000', secondary:'#27272a', muted:'#a1a1aa', 'input-background':'#18181b' } } }
+    }
+  </script>
+</head>
+<body class="min-h-screen flex bg-black text-white">
+<div class="w-64 bg-card border-r border-border flex flex-col">
+  <div class="p-6 border-b border-border"><h2 class="text-xl font-semibold">Quản trị CinemaX</h2></div>
+  <nav class="flex-1 p-4 space-y-2">
+    <a th:href="@{/admin}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-gray-300 hover:text-white"><i class="fas fa-desktop w-5"></i>Tổng quan</a>
+    <a th:href="@{/admin/movies}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-gray-300 hover:text-white"><i class="fas fa-film w-5"></i>Phim</a>
+    <a th:href="@{/admin/showtimes}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-gray-300 hover:text-white"><i class="far fa-calendar-alt w-5"></i>Lịch chiếu</a>
+    <a th:href="@{/admin/genres}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-gray-300 hover:text-white"><i class="fas fa-tags w-5"></i>Thể loại</a>
+    <a th:href="@{/admin/staff}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-primary-foreground transition-colors font-medium"><i class="fas fa-user-tie w-5"></i>Tài khoản nhân viên</a>
+  </nav>
+  <div class="p-4 border-t border-border"><a th:href="@{/logout}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-gray-300 hover:text-white"><i class="fas fa-sign-out-alt w-5"></i>Đăng xuất</a></div>
+</div>
+
+<main class="flex-1 overflow-auto p-8">
+  <h1 class="text-3xl font-semibold mb-8">Quản lý tài khoản nhân viên</h1>
+
+  <section class="bg-card rounded-lg p-6 border border-border mb-6">
+    <h3 class="text-xl mb-4">Thêm tài khoản nhân viên</h3>
+    <form class="grid grid-cols-1 md:grid-cols-3 gap-4" th:action="@{/admin/staff/add}" method="post">
+      <div>
+        <label class="block text-sm mb-2">Tên đăng nhập</label>
+        <input class="w-full px-4 py-3 rounded-lg bg-input-background border border-border focus:border-primary focus:outline-none" type="text" name="username" placeholder="staff_username">
+        <p class="text-red-300 text-sm mt-1" th:if="${staffFormErrors != null && staffFormErrors.username != null}" th:text="${staffFormErrors.username}"></p>
+      </div>
+      <div>
+        <label class="block text-sm mb-2">Mật khẩu</label>
+        <input class="w-full px-4 py-3 rounded-lg bg-input-background border border-border focus:border-primary focus:outline-none" type="password" name="password" placeholder="Tối thiểu 6 ký tự">
+        <p class="text-red-300 text-sm mt-1" th:if="${staffFormErrors != null && staffFormErrors.password != null}" th:text="${staffFormErrors.password}"></p>
+      </div>
+      <div class="flex items-end">
+        <button class="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold" type="submit">Thêm nhân viên</button>
+      </div>
+    </form>
+    <p class="text-red-300 text-sm mt-3" th:if="${staffUpdateError != null}" th:text="${staffUpdateError}"></p>
+  </section>
+
+  <section class="bg-card rounded-lg border border-border overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-secondary">
+      <tr>
+        <th class="text-left p-4">ID</th>
+        <th class="text-left p-4">Tên đăng nhập</th>
+        <th class="text-left p-4">Mật khẩu mới</th>
+        <th class="text-left p-4">Hành động</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr class="border-t border-border hover:bg-secondary/50" th:each="staff : ${staffAccounts}">
+        <td class="p-4" th:text="${staff.id}"></td>
+        <td class="p-4"><input class="w-full px-3 py-2 rounded-lg bg-input-background border border-border focus:border-primary focus:outline-none" type="text" th:name="${'username_' + staff.id}" th:value="${staff.username}"></td>
+        <td class="p-4"><input class="w-full px-3 py-2 rounded-lg bg-input-background border border-border focus:border-primary focus:outline-none" type="password" th:name="${'password_' + staff.id}" placeholder="Để trống để giữ mật khẩu cũ"></td>
+        <td class="p-4">
+          <div class="flex gap-2 items-center">
+            <form th:action="@{/admin/staff/{id}/update(id=${staff.id})}" method="post" class="flex gap-2 items-center"
+                  onsubmit="this.username.value=this.parentElement.parentElement.parentElement.querySelector('input[name^=\'username_\']').value; this.password.value=this.parentElement.parentElement.parentElement.querySelector('input[name^=\'password_\']').value;">
+              <input type="hidden" name="username">
+              <input type="hidden" name="password">
+              <button class="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold" type="submit"><i class="fas fa-save"></i></button>
+            </form>
+            <form th:action="@{/admin/staff/{id}/delete(id=${staff.id})}" method="post" onsubmit="return requestStaffDelete(this)">
+              <button class="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm" type="submit"><i class="fas fa-trash"></i></button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<div id="admin-popup-root"></div>
+
+<script>
+  const adminPopupRoot = document.getElementById('admin-popup-root');
+
+  function closeAdminPopup() {
+    adminPopupRoot.innerHTML = '';
+  }
+
+  function openAdminConfirm({ title, message, confirmLabel, cancelLabel, onConfirm }) {
+    adminPopupRoot.innerHTML = `
+      <div class="admin-popup-overlay" onclick="closeAdminPopup()">
+        <div class="admin-popup-card" onclick="event.stopPropagation()">
+          <h3 class="admin-popup-title">${title}</h3>
+          <p class="admin-popup-message">${message}</p>
+          <div class="admin-popup-actions">
+            <button class="admin-popup-btn admin-popup-btn-secondary" onclick="closeAdminPopup()">${cancelLabel}</button>
+            <button class="admin-popup-btn admin-popup-btn-danger" onclick="handleAdminConfirm()">${confirmLabel}</button>
+          </div>
+        </div>
+      </div>
+    `;
+    window.handleAdminConfirm = () => {
+      closeAdminPopup();
+      onConfirm();
+    };
+  }
+
+  function requestStaffDelete(formEl) {
+    openAdminConfirm({
+      title: 'Xóa tài khoản nhân viên?',
+      message: 'Hành động này không thể hoàn tác. Bạn có muốn tiếp tục?',
+      confirmLabel: 'Xóa',
+      cancelLabel: 'Hủy',
+      onConfirm: () => formEl.submit()
+    });
+    return false;
+  }
+</script>
+</body>
+</html>

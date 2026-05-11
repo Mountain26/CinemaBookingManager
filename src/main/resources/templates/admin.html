@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng điều khiển CinemaX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#09090b',
+                        card: '#18181b',
+                        border: '#27272a',
+                        primary: '#d4af37',
+                        'primary-foreground': '#000000',
+                        secondary: '#27272a',
+                        muted: '#a1a1aa'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #000000;
+            color: white;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex bg-black text-white">
+
+    <!-- Sidebar -->
+    <div class="w-64 bg-card border-r border-border flex flex-col">
+        <div class="p-6 border-b border-border">
+            <h2 class="text-xl font-semibold">Quản trị CinemaX</h2>
+        </div>
+
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="#" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-primary-foreground transition-colors font-medium">
+                <i class="fas fa-desktop w-5"></i>
+                Tổng quan
+            </a>
+            <a th:href="@{/admin/movies}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-gray-300 hover:text-white">
+                <i class="fas fa-film w-5"></i>
+                Phim
+            </a>
+            <a th:href="@{/admin/showtimes}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-gray-300 hover:text-white">
+                <i class="far fa-calendar-alt w-5"></i>
+                Lịch chiếu
+            </a>
+            <a th:href="@{/admin/genres}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-gray-300 hover:text-white">
+                <i class="fas fa-tags w-5"></i>
+                Thể loại
+            </a>
+            <a th:href="@{/admin/staff}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-gray-300 hover:text-white">
+                <i class="fas fa-user-tie w-5"></i>
+                Tài khoản nhân viên
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-border">
+            <a th:href="@{/logout}" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary transition-colors text-gray-300 hover:text-white">
+                <i class="fas fa-sign-out-alt w-5"></i>
+                Đăng xuất
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-auto p-8">
+        <h1 class="text-3xl font-semibold mb-8 text-white">Tổng quan hệ thống</h1>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-card rounded-lg p-6 border border-border">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-primary/10 p-3 rounded-lg">
+                        <i class="fas fa-dollar-sign text-xl text-primary"></i>
+                    </div>
+                    <i class="fas fa-arrow-trend-up text-xl text-green-500"></i>
+                </div>
+                <h3 id="totalRevenue30d" class="text-2xl font-bold mb-1" th:text="${totalRevenue30d}">$0</h3>
+                <p class="text-sm text-muted">Tổng doanh thu (30 ngày)</p>
+            </div>
+
+            <div class="bg-card rounded-lg p-6 border border-border">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-primary/10 p-3 rounded-lg">
+                        <i class="fas fa-ticket-alt text-xl text-primary"></i>
+                    </div>
+                    <i class="fas fa-arrow-trend-up text-xl text-green-500"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-1" th:text="${ticketsSold30d}">0</h3>
+                <p class="text-sm text-muted">Vé đã bán (30 ngày)</p>
+            </div>
+
+            <div class="bg-card rounded-lg p-6 border border-border">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-primary/10 p-3 rounded-lg">
+                        <i class="fas fa-film text-xl text-primary"></i>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold mb-1" th:text="${activeMovies}">0</h3>
+                <p class="text-sm text-muted">Phim đang chiếu</p>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-card rounded-lg p-6 border border-border">
+                <h3 class="text-xl font-semibold mb-4">Doanh thu 30 ngày gần nhất</h3>
+                <div class="relative h-[300px] w-full">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-card rounded-lg p-6 border border-border">
+                <h3 class="text-xl font-semibold mb-4">Top 5 phim doanh thu cao nhất</h3>
+                <div class="relative h-[300px] w-full">
+                    <canvas id="moviesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        Chart.defaults.color = '#888';
+        Chart.defaults.borderColor = '#333';
+
+        const totalRevenueEl = document.getElementById('totalRevenue30d');
+        if (totalRevenueEl) {
+            const revenueValue = Number(totalRevenueEl.textContent || 0);
+            totalRevenueEl.textContent = revenueValue.toLocaleString('vi-VN') + ' VND';
+        }
+
+        const monthlyLabels = /*[[${monthlyLabels}]]*/ [];
+        const monthlyValues = /*[[${monthlyValues}]]*/ [];
+        const topMovieLabels = /*[[${topMovieLabels}]]*/ [];
+        const topMovieValues = /*[[${topMovieValues}]]*/ [];
+
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Doanh thu',
+                    data: monthlyValues,
+                    borderColor: '#d4af37',
+                    backgroundColor: '#d4af37',
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointBackgroundColor: '#d4af37'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        const moviesCtx = document.getElementById('moviesChart').getContext('2d');
+        new Chart(moviesCtx, {
+            type: 'bar',
+            data: {
+                labels: topMovieLabels,
+                datasets: [{
+                    label: 'Doanh thu',
+                    data: topMovieValues,
+                    backgroundColor: '#d4af37',
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

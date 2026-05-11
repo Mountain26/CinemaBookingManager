@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chọn ghế - CinemaX</title>
+    <link rel="stylesheet" th:href="@{/base.css}">
+    <link rel="stylesheet" th:href="@{/user-pages.css}">
+    <link rel="stylesheet" th:href="@{/cinema.css}">
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+        }
+        .seat-selection-page {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .topbar {
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background-color: #1a1a1a;
+        }
+        .topbar a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.5rem;
+        }
+        .show-info h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        .show-info p {
+            margin: 0;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+        .seat-layout {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+        .screen-area {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .screen-area .screen {
+            height: 8px;
+            background: #f5c518;
+            border-radius: 4px;
+            box-shadow: 0 0 20px 5px #f5c518;
+            margin-bottom: 10px;
+        }
+        .seat-legend {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 40px;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        .legend-box.available { background-color: #4a4a4a; }
+        .legend-box.selected { background-color: #f5c518; }
+        .legend-box.reserved { background-color: #2c2c2c; }
+        .legend-box.vip { border: 1px solid #f5c518; }
+
+        .seat-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .seat-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .row-label {
+            width: 20px;
+            text-align: center;
+            color: #a0a0a0;
+        }
+        .seat {
+            width: 30px;
+            height: 30px;
+            background-color: #4a4a4a;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .seat.selected {
+            background-color: #f5c518;
+        }
+        .seat.reserved {
+            background-color: #2c2c2c;
+            cursor: not-allowed;
+        }
+        .seat.vip {
+            border: 1px solid #f5c518;
+        }
+        .selection-footer {
+            background-color: #1a1a1a;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        .selected-info .seats {
+            font-size: 1rem;
+            color: #a0a0a0;
+        }
+        .selected-info .price {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #f5c518;
+        }
+        .btn-next {
+            background-color: #f5c518;
+            color: #121212;
+            padding: 15px 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .btn-next.disabled {
+            background-color: #4a4a4a;
+            color: #a0a0a0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<header class="user-topbar">
+    <div class="user-topbar-inner">
+        <div class="brand">CinemaX</div>
+        <div class="topbar-actions">
+            <span class="btn-ghost" style="cursor: default;">Xin chào, <span th:text="${currentUserName}">bạn</span></span>
+            <a class="btn-outline" th:href="@{/profile}">Hồ sơ của tôi</a>
+            <a class="btn-ghost" th:href="@{/logout}">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+<div class="seat-selection-page">
+    <div class="topbar">
+        <a th:href="@{/showtimes(movieId=${showtime.movie.id})}">&lt;</a>
+        <div class="show-info">
+            <h2 th:text="${showtime.movie.title}">Galactic Odyssey</h2>
+            <p th:text="|${#temporals.format(showtime.startTime, 'yyyy-MM-dd • HH:mm')} • ${showtime.room.name}|">2026-05-07 • 10:15 • Room 1</p>
+        </div>
+    </div>
+
+    <main class="seat-layout" style="padding-bottom: 120px;">
+        <div class="screen-area">
+            <div class="screen"></div>
+            <div>MÀN HÌNH</div>
+        </div>
+
+        <div class="seat-legend">
+            <div class="legend-item"><div class="legend-box available"></div> Còn trống</div>
+            <div class="legend-item"><div class="legend-box selected"></div> Đã chọn</div>
+            <div class="legend-item"><div class="legend-box reserved"></div> Đã đặt</div>
+            <div class="legend-item"><div class="legend-box vip"></div> VIP</div>
+        </div>
+
+        <div class="seat-grid" id="seatGrid">
+            <!-- Seats will be dynamically inserted here -->
+        </div>
+    </main>
+
+    <footer class="selection-footer">
+        <div class="selected-info">
+            <div id="selectedSeatsInfo" class="seats">Ghế đã chọn: 0</div>
+            <div id="totalPrice" class="price">0 VND</div>
+        </div>
+        <a id="nextBtn" href="#" class="btn-next disabled">Tiếp tục</a>
+    </footer>
+</div>
+
+<script th:inline="javascript">
+    const seats = /*[[${seats}]]*/ [];
+    const bookedSeatIds = new Set(/*[[${bookedSeatIds}]]*/ []);
+    const showtimeId = /*[[${showtime.id}]]*/ 0;
+    const regularPrice = 100000;
+    const vipPrice = 150000;
+    const MAX_SEATS = 8;
+
+    const selectedIds = new Set();
+    const seatGrid = document.getElementById('seatGrid');
+    const selectedSeatsInfo = document.getElementById('selectedSeatsInfo');
+    const totalPriceEl = document.getElementById('totalPrice');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function getSeatPrice(seat) {
+        return seat.seatName.match(/[BCD]/) ? vipPrice : regularPrice;
+    }
+
+    function formatCurrency(value) {
+        return value.toLocaleString('vi-VN') + ' VND';
+    }
+
+    function updateSummary() {
+        let total = 0;
+        const selectedSeatNames = [];
+        selectedIds.forEach(id => {
+            const seat = seats.find(s => s.id === id);
+            if (seat) {
+                total += getSeatPrice(seat);
+                selectedSeatNames.push(seat.seatName);
+            }
+        });
+
+        if (selectedIds.size > 0) {
+            selectedSeatsInfo.textContent = `Ghế đã chọn: ${selectedSeatNames.join(', ')}`;
+            nextBtn.classList.remove('disabled');
+            const seatIdsParam = Array.from(selectedIds).join(',');
+            const seatNamesParam = encodeURIComponent(selectedSeatNames.join(','));
+            nextBtn.href = `/checkout?showtimeId=${showtimeId}&seatIds=${seatIdsParam}&ticketTotal=${total}&seatNames=${seatNamesParam}`;
+        } else {
+            selectedSeatsInfo.textContent = 'Ghế đã chọn: 0';
+            nextBtn.classList.add('disabled');
+            nextBtn.href = '#';
+        }
+        totalPriceEl.textContent = formatCurrency(total);
+    }
+
+    const seatRows = {};
+    seats.forEach(seat => {
+        const row = seat.seatName.charAt(0);
+        if (!seatRows[row]) {
+            seatRows[row] = [];
+        }
+        seatRows[row].push(seat);
+    });
+
+    Object.keys(seatRows).sort().forEach(rowKey => {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'seat-row';
+
+        const leftLabel = document.createElement('div');
+        leftLabel.className = 'row-label';
+        leftLabel.textContent = rowKey;
+        rowEl.appendChild(leftLabel);
+
+        const seatsInRow = seatRows[rowKey].sort((a, b) => parseInt(a.seatName.substring(1)) - parseInt(b.seatName.substring(1)));
+        seatsInRow.forEach(seat => {
+            const seatEl = document.createElement('button');
+            seatEl.className = 'seat';
+            seatEl.textContent = seat.seatName.substring(1);
+
+            if (bookedSeatIds.has(seat.id)) {
+                seatEl.classList.add('reserved');
+                seatEl.disabled = true;
+            } else {
+                if (seat.seatName.match(/[BCD]/)) {
+                    seatEl.classList.add('vip');
+                }
+
+                seatEl.onclick = () => {
+                    const seatId = seat.id;
+                    if (selectedIds.has(seatId)) {
+                        selectedIds.delete(seatId);
+                        seatEl.classList.remove('selected');
+                    } else {
+                        if (selectedIds.size >= MAX_SEATS) {
+                            alert(`Bạn chỉ có thể chọn tối đa ${MAX_SEATS} ghế.`);
+                            return;
+                        }
+                        selectedIds.add(seatId);
+                        seatEl.classList.add('selected');
+                    }
+                    updateSummary();
+                };
+            }
+            rowEl.appendChild(seatEl);
+        });
+
+        const rightLabel = document.createElement('div');
+        rightLabel.className = 'row-label';
+        rightLabel.textContent = rowKey;
+        rowEl.appendChild(rightLabel);
+
+        seatGrid.appendChild(rowEl);
+    });
+
+    updateSummary();
+</script>
+</body>
+</html>
