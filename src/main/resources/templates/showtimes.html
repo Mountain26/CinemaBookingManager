@@ -3,6 +3,50 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lịch chiếu - CinemaX</title><link rel="stylesheet" th:href="@{/base.css}"><link rel="stylesheet" th:href="@{/user-pages.css}">
+  <style>
+    .movie-detail-info h1 {
+        margin: 0 0 16px;
+        font-size: 42px;
+        font-weight: 700;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+    .movie-detail-meta {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+    .movie-detail-desc {
+        color: #e2e8f0;
+        margin: 0 0 20px;
+        line-height: 1.6;
+        font-size: 16px;
+        text-align: justify;
+    }
+    .detail-poster {
+        width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 40px;
+        align-items: center;
+    }
+    @media (max-width: 900px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+        .movie-detail-meta {
+            justify-content: center;
+        }
+        .movie-detail-desc {
+            text-align: center;
+        }
+    }
+  </style>
 </head>
 <body>
 <header class="user-topbar">
@@ -16,7 +60,33 @@
     </div>
 </header>
 <section class="detail-hero" th:style="|background-image:url('${movie.posterUrl != null && !#strings.isEmpty(movie.posterUrl) ? movie.posterUrl : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1920&q=80'}')|"><div class="hero-overlay"></div><a class="back-btn" th:href="@{/home}">Quay lại</a></section>
-<main class="container detail-wrap"><div class="detail-card"><div class="detail-grid"><div><img class="detail-poster" th:src="${movie.posterUrl}" th:alt="${movie.title}"></div><div><h1 style="margin:0 0 12px;font-size:38px" th:text="${movie.title}"></h1><div class="meta"><span class="chip" th:text="${movie.genre}"></span><span class="chip" th:text="${movie.duration} + ' phút'"></span></div><p style="color:var(--muted);margin:0 0 14px" th:text="${movie.description}"></p></div></div></div>
-<section style="padding-bottom:34px"><div class="room-card" th:each="entry : ${showtimesByRoom}"><h3 style="margin-top:0" th:text="${entry.key.name}"></h3><div class="time-grid"><th:block th:each="s : ${entry.value}"><a class="time-btn" th:if="${s.status.name() == 'SCHEDULED'}" th:href="@{/seats(showtimeId=${s.id})}" th:text="${#temporals.format(s.startTime,'HH:mm dd/MM')}"></a><span class="time-btn disabled" th:if="${s.status.name() != 'SCHEDULED'}">Hết vé</span></th:block></div></div></section>
+<main class="container detail-wrap">
+    <div class="detail-card">
+        <div class="detail-grid">
+            <div>
+                <img class="detail-poster" th:src="${movie.posterUrl}" th:alt="${movie.title}">
+            </div>
+            <div class="movie-detail-info">
+                <h1 th:text="${movie.title}"></h1>
+                <div class="movie-detail-meta">
+                    <span class="chip" th:text="${movie.genre}"></span>
+                    <span class="chip" th:text="${movie.duration} + ' phút'"></span>
+                </div>
+                <p class="movie-detail-desc" th:text="${movie.description}"></p>
+            </div>
+        </div>
+    </div>
+<section style="padding-bottom:34px">
+    <div class="room-card" th:each="entry : ${showtimesByRoom}">
+        <h3 style="margin-top:0; font-size: 24px; margin-bottom: 20px;" th:text="${entry.key.name}"></h3>
+        <div class="time-grid">
+            <th:block th:each="s : ${entry.value}">
+                <a class="time-btn" th:if="${s.status.name() == 'SCHEDULED'}" th:href="@{/seats(showtimeId=${s.id})}" th:text="${#temporals.format(s.startTime,'HH:mm dd/MM')}"></a>
+                <span class="time-btn disabled" th:if="${s.status.name() != 'SCHEDULED'}">Hết vé</span>
+            </th:block>
+        </div>
+    </div>
+</section>
 </main>
-</body></html>
+</body>
+</html>

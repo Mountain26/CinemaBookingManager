@@ -352,10 +352,10 @@ public class ViewController {
     }
 
     @PostMapping("/register")
-    public String doRegister(@RequestParam String password,
-                             @RequestParam String confirmPassword,
-                             @RequestParam String fullName, @RequestParam String email,
-                             @RequestParam String phone, Model model) {
+    public String doRegister(@RequestParam(required = false) String password,
+                             @RequestParam(required = false) String confirmPassword,
+                             @RequestParam(required = false) String fullName, @RequestParam(required = false) String email,
+                             @RequestParam(required = false) String phone, Model model) {
         Map<String, String> fieldErrors = new LinkedHashMap<>();
         String normalizedEmail = email == null ? "" : email.trim();
         String normalizedPhone = phone == null ? "" : phone.trim();
@@ -411,15 +411,22 @@ public class ViewController {
         } catch (Exception e) {
             String message = e.getMessage() == null ? "" : e.getMessage().toLowerCase();
             if (message.contains("email")) {
-                model.addAttribute("formError", "Email đã tồn tại.");
-            } else if (message.contains("số điện thoại") || message.contains("phone")) {
-                model.addAttribute("formError", "Số điện thoại đã tồn tại.");
-            } else if (message.contains("xác nhận")) {
-                model.addAttribute("formError", "Mật khẩu xác nhận không khớp.");
-            } else {
-                model.addAttribute("formError", "Đăng ký không thành công.");
+                fieldErrors.put("email", "Email đã tồn tại.");
             }
-            model.addAttribute("fieldErrors", new LinkedHashMap<String, String>());
+            if (message.contains("số điện thoại") || message.contains("phone")) {
+                fieldErrors.put("phone", "Số điện thoại đã tồn tại.");
+            }
+            if (message.contains("xác nhận")) {
+                fieldErrors.put("confirmPassword", "Mật khẩu xác nhận không khớp.");
+            }
+            if (message.contains("mật khẩu") && !message.contains("xác nhận")) {
+                fieldErrors.put("password", "Vui lòng nhập mật khẩu.");
+            }
+            if (fieldErrors.isEmpty()) {
+                model.addAttribute("formError", "Đăng ký không thành công.");
+            } else {
+                model.addAttribute("fieldErrors", fieldErrors);
+            }
             model.addAttribute("fullName", normalizedFullName);
             model.addAttribute("email", normalizedEmail);
             model.addAttribute("phone", normalizedPhone);
